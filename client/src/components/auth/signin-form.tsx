@@ -19,7 +19,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { InsertUser } from "@shared/schema";
 
 const signinSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
   rememberMe: z.boolean().default(false),
 });
@@ -48,15 +48,15 @@ export default function SignInForm({
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signinSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
       rememberMe: false,
     },
   });
 
   const onSubmit = async (data: SignInFormValues) => {
-    const credentials: Pick<InsertUser, "username" | "password"> = {
-      username: data.username,
+    const credentials = {
+      email: data.email,
       password: data.password,
     };
 
@@ -141,12 +141,12 @@ export default function SignInForm({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="username" {...field} />
+                  <Input type="email" placeholder="your.email@example.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

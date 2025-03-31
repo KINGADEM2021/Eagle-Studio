@@ -20,7 +20,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 p-6">
       <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold mb-6">Welcome, {user.username}!</h1>
+        <h1 className="text-2xl font-bold mb-6">Welcome, {user.email}!</h1>
         <p className="text-gray-600 mb-8">
           You have successfully logged in to your account.
         </p>

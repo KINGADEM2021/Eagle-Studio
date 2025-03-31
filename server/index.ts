@@ -2,6 +2,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Make environment variables available to Vite
+process.env.VITE_SUPABASE_URL = process.env.SUPABASE_URL;
+process.env.VITE_SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

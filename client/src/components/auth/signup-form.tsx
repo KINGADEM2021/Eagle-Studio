@@ -21,7 +21,7 @@ import { useAuth } from "@/hooks/use-auth";
 const signupSchema = z
   .object({
     fullName: z.string().min(2, "Full name must be at least 2 characters"),
-    username: z.string().min(3, "Username must be at least 3 characters"),
+    email: z.string().email("Please enter a valid email address"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -62,7 +62,7 @@ export default function SignUpForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       fullName: "",
-      username: "",
+      email: "",
       password: "",
       confirmPassword: "",
       agreeTerms: false,
@@ -72,13 +72,14 @@ export default function SignUpForm({
   const onSubmit = async (data: SignUpFormValues) => {
     try {
       await registerMutation.mutateAsync({
-        username: data.username,
+        email: data.email,
         password: data.password,
+        name: data.fullName,
       });
       
       onSuccess(
         "Account Created!",
-        "Your account has been created successfully. You can now sign in to access your account.",
+        "Your account has been created successfully. Please check your email for verification instructions.",
         "Go to Sign In",
         onSignInClick
       );
@@ -167,12 +168,12 @@ export default function SignUpForm({
 
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="johndoe" {...field} />
+                  <Input type="email" placeholder="john.doe@example.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
