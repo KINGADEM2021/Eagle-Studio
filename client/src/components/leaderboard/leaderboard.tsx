@@ -23,26 +23,113 @@ export default function Leaderboard({ onUsersLoaded, onRefresh }: LeaderboardPro
   const { toast } = useToast();
   const { user } = useAuth();
   
+  // Helper function to create the profiles_with_points view if it doesn't exist
+  const createProfilesWithPointsView = async () => {
+    try {
+      console.log('Attempting to create profiles_with_points view...');
+      
+      // First, try to create the points table if it doesn't exist
+      const { error: createTableError } = await supabase.rpc('create_points_table_if_not_exists');
+      
+      if (createTableError) {
+        console.error('Error creating points table:', createTableError);
+        // Update the toast message to guide the user
+        toast({
+          title: "Setup required",
+          description: "Please run the SQL setup script in Supabase first. Check the Setup SQL tab for instructions.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Then try to create the view
+      const { error: createViewError } = await supabase.rpc('create_profiles_with_points_view');
+      
+      if (createViewError) {
+        console.error('Error creating view:', createViewError);
+        // Update the toast message to guide the user
+        toast({
+          title: "Setup required",
+          description: "Please run the SQL setup script in Supabase first. Check the Setup SQL tab for instructions.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      console.log('Successfully created profiles_with_points view');
+      return true;
+    } catch (error) {
+      console.error('Error setting up leaderboard tables:', error);
+      toast({
+        title: "Setup required",
+        description: "Please run the SQL setup script in Supabase first. Check the Setup SQL tab for instructions.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+  
   // Function to fetch leaderboard data - can be called to refresh
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (): Promise<void> => {
     try {
       setLoading(true);
       
-      // First, ensure the profiles_with_points view exists (create it if it doesn't)
-      await createProfilesWithPointsView();
-      
-      // Then fetch the leaderboard data
+      // Attempt to fetch the leaderboard data directly
       const { data, error } = await supabase
         .from('profiles_with_points')
         .select('id, name, points')
         .order('points', { ascending: false });
       
+      // Handle error if the view doesn't exist yet
       if (error) {
-        throw error;
+        console.error('Error fetching leaderboard:', error);
+        
+        // If the error is because the view doesn't exist, try to create it
+        if (error.code === '42P01') { // Relation does not exist
+          console.log('profiles_with_points view not found, attempting to create it');
+          const success = await createProfilesWithPointsView();
+          
+          // Only retry the query if the view was successfully created
+          if (success) {
+            // Try the query again after creating the view
+            const retryResult = await supabase
+              .from('profiles_with_points')
+              .select('id, name, points')
+              .order('points', { ascending: false });
+              
+            if (retryResult.error) {
+              throw retryResult.error;
+            }
+            
+            // Transform the data and add ranks
+            const rankedUsers = (retryResult.data || []).map((user: any, index: number) => ({
+              ...user,
+              rank: index + 1,
+              name: user.name || user.id.substring(0, 8) // Use part of ID if name is not available
+            }));
+            
+            setUsers(rankedUsers);
+            
+            // If onUsersLoaded callback is provided, send the users data to parent component
+            if (onUsersLoaded) {
+              onUsersLoaded(rankedUsers);
+            }
+            
+            return; // Exit the function since we've handled the data
+          } else {
+            // If creating the view failed, exit early and keep loading false
+            setLoading(false);
+            return;
+          }
+        } else {
+          // If it's some other error, throw it
+          throw error;
+        }
       }
       
+      // If we get here, there was no error with the initial query
       // Transform the data and add ranks
-      const rankedUsers = data.map((user, index) => ({
+      const rankedUsers = (data || []).map((user: any, index: number) => ({
         ...user,
         rank: index + 1,
         name: user.name || user.id.substring(0, 8) // Use part of ID if name is not available
@@ -58,14 +145,16 @@ export default function Leaderboard({ onUsersLoaded, onRefresh }: LeaderboardPro
       console.error('Error fetching leaderboard:', error);
       toast({
         title: "Failed to load leaderboard",
-        description: "Could not retrieve the leaderboard data. Please try again.",
+        description: "Please run the SQL setup script in Supabase first. Check the Setup SQL tab for instructions.",
         variant: "destructive",
       });
+      // Set users to empty array to avoid mapping errors
+      setUsers([]);
     } finally {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchLeaderboard();
     
@@ -74,43 +163,6 @@ export default function Leaderboard({ onUsersLoaded, onRefresh }: LeaderboardPro
       onRefresh(fetchLeaderboard);
     }
   }, [toast, onUsersLoaded, onRefresh]);
-  
-  // Helper function to create the profiles_with_points view if it doesn't exist
-  const createProfilesWithPointsView = async () => {
-    try {
-      // Check if we can query the view - if it works, the view exists
-      const { error } = await supabase
-        .from('profiles_with_points')
-        .select('id')
-        .limit(1);
-      
-      // If there's no error, the view exists and we can return
-      if (!error) return;
-      
-      // If we get here, we need to create the view
-      // First, create the points table if it doesn't exist
-      const { error: createTableError } = await supabase.rpc('create_points_table_if_not_exists');
-      
-      if (createTableError) {
-        console.error('Error creating points table:', createTableError);
-        // Try direct SQL if RPC fails - would need admin rights
-        // Note: This may not work if the user doesn't have admin rights
-        console.warn('Could not create points table - you may need to execute this SQL in the Supabase dashboard');
-      }
-      
-      // Create the view
-      const { error: createViewError } = await supabase.rpc('create_profiles_with_points_view');
-      
-      if (createViewError) {
-        console.error('Error creating view:', createViewError);
-        // Try direct SQL if RPC fails - would need admin rights
-        // Note: This may not work if the user doesn't have admin rights
-        console.warn('Could not create profiles_with_points view - you may need to execute this SQL in the Supabase dashboard');
-      }
-    } catch (error) {
-      console.error('Error setting up leaderboard tables:', error);
-    }
-  };
 
   // Function to get the background color for ranks - matches the screenshot
   const getRankColor = (rank: number) => {
