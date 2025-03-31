@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import Leaderboard from "@/components/leaderboard/leaderboard";
 import AddPoints from "@/components/leaderboard/add-points";
-import SetupSQL from "@/components/leaderboard/setup-sql";
+
 import AdminPanel from "@/components/leaderboard/admin-panel";
 
 type LeaderboardUser = {
@@ -93,8 +93,10 @@ export default function HomePage() {
 
         {/* Sidebar */}
         <div className="w-full md:w-1/3 space-y-6">
-          <AddPoints onPointsAdded={handlePointsAdded} />
-          <SetupSQL />
+          {/* Only show AddPoints for admin user */}
+          {user?.email === "ademmsallem782@gmail.com" && (
+            <AddPoints onPointsAdded={handlePointsAdded} />
+          )}
         </div>
       </div>
     </div>
