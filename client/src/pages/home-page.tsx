@@ -51,16 +51,16 @@ export default function HomePage() {
   const userName = user.user_metadata?.name || user.email;
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-950 p-6">
+    <div className="min-h-screen flex flex-col items-center p-4 md:p-6">
       {/* Header */}
-      <div className="w-full max-w-5xl mb-8 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-white">
-          Welcome, <span className="text-primary">{userName}</span>!
+      <div className="w-full max-w-5xl mb-6 md:mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold gradient-heading">
+          Welcome, <span className="text-yellow-400">{userName}</span>!
         </h1>
         <Button 
           onClick={handleLogout} 
           variant="outline" 
-          className="border-primary text-primary hover:bg-primary/10"
+          className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/80 transition-all duration-300"
           disabled={logoutMutation.isPending}
         >
           {logoutMutation.isPending ? (

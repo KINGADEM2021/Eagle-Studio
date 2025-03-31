@@ -59,23 +59,28 @@ export default function AddPoints({ onPointsAdded }: { onPointsAdded: () => void
   };
 
   return (
-    <Card className="bg-gray-900 border-primary">
+    <Card className="glass-card border-yellow-500/50 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-white">Add Points</CardTitle>
+        <CardTitle className="gradient-heading font-bold">Add Points</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="bg-black/40 p-3 rounded-lg mb-3 border border-yellow-500/20">
+          <p className="text-gray-300 text-sm">
+            As an admin, you can add points to your own account here. Points will appear on the leaderboard.
+          </p>
+        </div>
         <div className="flex space-x-2">
           <Input
             type="number"
             value={points}
             onChange={(e) => setPoints(parseInt(e.target.value) || 0)}
             min="1"
-            className="bg-gray-800 text-white border-gray-700"
+            className="bg-black/50 text-white border-yellow-500/30 focus:border-yellow-500/70 transition-all"
           />
           <Button 
             onClick={handleAddPoints}
             disabled={isLoading}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium transition-all duration-300"
           >
             {isLoading ? (
               <>

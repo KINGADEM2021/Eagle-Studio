@@ -108,23 +108,31 @@ export default function SetupSQL() {
   ];
 
   return (
-    <Card className="bg-gray-900 border-primary mt-4">
+    <Card className="glass-card border-yellow-500/50 shadow-lg mt-4">
       <CardHeader>
-        <CardTitle className="text-white">Supabase SQL Setup</CardTitle>
+        <CardTitle className="gradient-heading font-bold">Supabase SQL Setup</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-400 mb-4">
-          You need to set up some SQL functions in your Supabase project. Copy and run these in your Supabase SQL editor:
-        </p>
-        <div className="space-y-2">
+        <div className="bg-black/40 p-4 rounded-lg mb-6 border border-yellow-500/20">
+          <p className="text-gray-300">
+            To enable the leaderboard functionality, you need to set up some SQL functions in your Supabase project. 
+            Copy and run these scripts in your Supabase SQL editor:
+          </p>
+        </div>
+        <div className="space-y-3">
           {setupSQL.map((item, index) => (
             <Button
               key={index}
               variant="outline"
-              className="w-full justify-start border-gray-700 text-white hover:bg-gray-800"
+              className="w-full justify-start border-yellow-500/30 text-white hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all duration-200 py-3 h-auto"
               onClick={() => copyToClipboard(item.sql)}
             >
-              Copy: {item.name}
+              <span className="flex items-center">
+                <span className="w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center mr-3 text-sm text-yellow-400">
+                  {index + 1}
+                </span>
+                <span>Copy: {item.name}</span>
+              </span>
             </Button>
           ))}
         </div>

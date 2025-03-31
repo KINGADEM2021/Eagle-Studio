@@ -173,12 +173,12 @@ export default function Leaderboard({ onUsersLoaded, onRefresh }: LeaderboardPro
   // We're using a consistent text color now based on the screenshot
 
   return (
-    <Card className="w-full max-w-3xl bg-black border-yellow-500">
+    <Card className="w-full max-w-3xl glass-card border-yellow-500/50 shadow-lg">
       <CardHeader className="pb-3 text-center">
-        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text">
+        <CardTitle className="text-2xl font-bold gradient-heading">
           Eagle Studio Leaderboard
         </CardTitle>
-        <p className="text-gray-400 text-sm">إنجز المهام وإربح النقاط</p>
+        <p className="text-gray-400 text-sm mt-1">إنجز المهام وإربح النقاط</p>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -186,31 +186,41 @@ export default function Leaderboard({ onUsersLoaded, onRefresh }: LeaderboardPro
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {users.map((leaderboardUser) => (
               <div 
                 key={leaderboardUser.id}
-                className="flex items-center justify-between p-3 rounded-md bg-black"
+                className="flex items-center justify-between p-4 rounded-md bg-black/30 backdrop-blur-sm border border-yellow-500/10 hover:border-yellow-500/30 transition-all duration-300"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div 
-                    className={`flex items-center justify-center w-8 h-8 rounded-full ${getRankColor(leaderboardUser.rank)} text-black font-bold`}
+                    className={`flex items-center justify-center w-9 h-9 rounded-full ${getRankColor(leaderboardUser.rank)} text-black font-bold shadow-md`}
                   >
                     {leaderboardUser.rank}
                   </div>
-                  <span className="text-lg text-white">
+                  <span className="text-lg text-white font-medium">
                     {leaderboardUser.name}
                   </span>
                 </div>
-                <div className="text-lg font-medium text-white">
-                  <span>{leaderboardUser.points}</span> نقطة
+                <div className="text-lg font-medium">
+                  <span className="text-yellow-400">{leaderboardUser.points}</span> <span className="text-yellow-500/70">نقطة</span>
                 </div>
               </div>
             ))}
 
             {users.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
-                No users on the leaderboard yet. Be the first to earn points!
+              <div className="text-center py-12 px-4">
+                <div className="border-2 border-dashed border-yellow-500/30 rounded-lg p-8 flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                    <span className="text-yellow-500 text-2xl font-bold">1</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">No Users Yet</h3>
+                    <p className="text-gray-400">
+                      Create an account and be the first to earn points on the leaderboard!
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>

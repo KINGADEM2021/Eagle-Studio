@@ -89,9 +89,9 @@ export default function AdminPanel({
   ];
 
   return (
-    <Card className="bg-black border-yellow-500">
+    <Card className="glass-card border-yellow-500/50 shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-white bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text">
+        <CardTitle className="gradient-heading font-bold">
           Admin Panel
         </CardTitle>
         {isAuthorizedAdmin && (
@@ -110,40 +110,51 @@ export default function AdminPanel({
       </CardHeader>
       <CardContent className="pt-4">
         {!isAuthorizedAdmin ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-4 text-center">
-            <ShieldAlert className="w-8 h-8 text-yellow-500" />
-            <p className="text-gray-400 text-sm">
-              Only the admin (ademmsallem782@gmail.com) can modify user points
+          <div className="flex flex-col items-center justify-center gap-3 py-6 text-center px-4">
+            <div className="p-3 bg-yellow-500/10 rounded-full">
+              <ShieldAlert className="w-8 h-8 text-yellow-500" />
+            </div>
+            <p className="text-gray-400">
+              Only the admin (<span className="text-yellow-400">ademmsallem782@gmail.com</span>) can modify user points
             </p>
           </div>
         ) : !isAdmin ? (
-          <p className="text-gray-400 text-sm py-4 text-center">
-            Enable Admin Mode to modify user points
-          </p>
+          <div className="flex flex-col items-center justify-center gap-3 py-6 border-2 border-dashed border-yellow-500/20 rounded-lg mx-2">
+            <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+              <Switch 
+                checked={false}
+                className="data-[state=checked]:bg-yellow-500"
+                onCheckedChange={setIsAdmin}
+              />
+            </div>
+            <p className="text-gray-300">
+              Enable Admin Mode to modify user points
+            </p>
+          </div>
         ) : (
           <div className="space-y-3">
             {users.map((user) => (
-              <div key={user.id} className="bg-black p-3 rounded-md">
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500 text-black text-sm font-bold`}>
+              <div key={user.id} className="bg-black/30 backdrop-blur-sm p-4 rounded-md border border-yellow-500/10">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className={`flex items-center justify-center w-8 h-8 rounded-full bg-yellow-500 text-black text-sm font-bold shadow`}>
                       {user.rank}
                     </span>
                     <span className="text-white font-medium">
                       {user.name}
                     </span>
                   </div>
-                  <span className="text-white font-medium">
-                    <span className="text-white">{user.points}</span> نقطة
+                  <span className="font-medium">
+                    <span className="text-yellow-400">{user.points}</span> <span className="text-yellow-500/70">نقطة</span>
                   </span>
                 </div>
 
-                <div className="flex flex-wrap justify-end gap-1">
+                <div className="flex flex-wrap justify-end gap-1.5">
                   {pointButtons.map((btn) => (
                     <Button
                       key={`${user.id}-${btn.value}`}
                       size="sm"
-                      className={`${btn.className} text-xs h-7 min-w-7 px-2`}
+                      className={`${btn.className} text-xs h-7 min-w-7 px-2 shadow-md`}
                       disabled={loading[user.id]}
                       onClick={() => handlePointChange(user.id, btn.value)}
                     >
@@ -159,8 +170,10 @@ export default function AdminPanel({
             ))}
 
             {users.length === 0 && (
-              <div className="text-center py-4 text-gray-400">
-                No users found in the leaderboard
+              <div className="text-center py-6 px-4 border border-dashed border-yellow-500/20 rounded-lg">
+                <p className="text-gray-400">
+                  No users found in the leaderboard. Users will appear here once they register.
+                </p>
               </div>
             )}
           </div>

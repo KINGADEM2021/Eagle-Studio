@@ -3,11 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 13%;
+    --card-foreground: 0 0% 98%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 0 0% 10%;
+    --border: 0 0% 20%;
+    --ring: 45 100% 50%;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground min-h-screen;
+    background: linear-gradient(to bottom, hsl(0 0% 8%), hsl(0 0% 12%));
+  }
+  
+  .glass-card {
+    @apply border border-gray-800 bg-opacity-30 backdrop-blur-sm;
+    background: rgba(18, 18, 18, 0.7);
+  }
+  
+  .gradient-heading {
+    @apply bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text;
   }
 }
