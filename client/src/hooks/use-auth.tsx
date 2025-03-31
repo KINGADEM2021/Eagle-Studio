@@ -82,11 +82,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: AuthError) => {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Login mutation error:", error);
+      
+      // Check for the specific "unexpected_failure" error (typically related to missing auth schema)
+      if (error.code === "unexpected_failure" && error.status === 500) {
+        toast({
+          title: "Supabase Configuration Error",
+          description: "Your Supabase project is not correctly configured for authentication. Please set up the auth schema in your Supabase project.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: error.message || "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -132,11 +143,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onError: (error: AuthError) => {
       console.error("Registration mutation error:", error);
-      toast({
-        title: "Registration failed",
-        description: error.message || "There was a problem creating your account. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Check for the specific "unexpected_failure" error (typically related to missing auth schema)
+      if (error.code === "unexpected_failure" && error.status === 500) {
+        toast({
+          title: "Supabase Configuration Error",
+          description: "Your Supabase project is not correctly configured for authentication. Please set up the auth schema in your Supabase project.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Registration failed",
+          description: error.message || "There was a problem creating your account. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
