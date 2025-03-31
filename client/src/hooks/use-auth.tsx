@@ -93,18 +93,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation<User | null, AuthError, RegisterData>({
     mutationFn: async (credentials: RegisterData) => {
-      const { data, error } = await supabase.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
-        options: {
-          data: {
-            name: credentials.name || "",
+      try {
+        console.log("Starting registration with credentials:", { 
+          email: credentials.email,
+          hasPassword: !!credentials.password,
+          name: credentials.name || "" 
+        });
+        
+        const { data, error } = await supabase.auth.signUp({
+          email: credentials.email,
+          password: credentials.password,
+          options: {
+            data: {
+              name: credentials.name || "",
+            },
+            emailRedirectTo: `${window.location.origin}/auth`,
           },
-        },
-      });
-      
-      if (error) throw error;
-      return data.user;
+        });
+        
+        if (error) {
+          console.error("Supabase signup error:", error);
+          throw error;
+        }
+        
+        console.log("Registration successful, user data:", data.user);
+        return data.user;
+      } catch (err) {
+        console.error("Registration error:", err);
+        throw err;
+      }
     },
     onSuccess: () => {
       refetch(); // Refetch user data after successful registration
@@ -114,9 +131,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: AuthError) => {
+      console.error("Registration mutation error:", error);
       toast({
         title: "Registration failed",
-        description: error.message,
+        description: error.message || "There was a problem creating your account. Please try again.",
         variant: "destructive",
       });
     },
