@@ -12,52 +12,68 @@ type LeaderboardUser = {
   rank: number;
 };
 
-export default function Leaderboard() {
+type LeaderboardProps = {
+  onUsersLoaded?: (users: LeaderboardUser[]) => void;
+  onRefresh?: (refreshFn: () => Promise<void>) => void;
+};
+
+export default function Leaderboard({ onUsersLoaded, onRefresh }: LeaderboardProps = {}) {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
   
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        setLoading(true);
-        
-        // First, ensure the profiles_with_points view exists (create it if it doesn't)
-        await createProfilesWithPointsView();
-        
-        // Then fetch the leaderboard data
-        const { data, error } = await supabase
-          .from('profiles_with_points')
-          .select('id, name, points')
-          .order('points', { ascending: false });
-        
-        if (error) {
-          throw error;
-        }
-        
-        // Transform the data and add ranks
-        const rankedUsers = data.map((user, index) => ({
-          ...user,
-          rank: index + 1,
-          name: user.name || user.id.substring(0, 8) // Use part of ID if name is not available
-        }));
-        
-        setUsers(rankedUsers);
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        toast({
-          title: "Failed to load leaderboard",
-          description: "Could not retrieve the leaderboard data. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+  // Function to fetch leaderboard data - can be called to refresh
+  const fetchLeaderboard = async () => {
+    try {
+      setLoading(true);
+      
+      // First, ensure the profiles_with_points view exists (create it if it doesn't)
+      await createProfilesWithPointsView();
+      
+      // Then fetch the leaderboard data
+      const { data, error } = await supabase
+        .from('profiles_with_points')
+        .select('id, name, points')
+        .order('points', { ascending: false });
+      
+      if (error) {
+        throw error;
       }
-    };
-    
+      
+      // Transform the data and add ranks
+      const rankedUsers = data.map((user, index) => ({
+        ...user,
+        rank: index + 1,
+        name: user.name || user.id.substring(0, 8) // Use part of ID if name is not available
+      }));
+      
+      setUsers(rankedUsers);
+      
+      // If onUsersLoaded callback is provided, send the users data to parent component
+      if (onUsersLoaded) {
+        onUsersLoaded(rankedUsers);
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      toast({
+        title: "Failed to load leaderboard",
+        description: "Could not retrieve the leaderboard data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchLeaderboard();
-  }, [toast]);
+    
+    // If onRefresh callback is provided, send the refresh function to parent component
+    if (onRefresh) {
+      onRefresh(fetchLeaderboard);
+    }
+  }, [toast, onUsersLoaded, onRefresh]);
   
   // Helper function to create the profiles_with_points view if it doesn't exist
   const createProfilesWithPointsView = async () => {
@@ -96,18 +112,13 @@ export default function Leaderboard() {
     }
   };
 
-  // Function to get the background color for ranks
+  // Function to get the background color for ranks - matches the screenshot
   const getRankColor = (rank: number) => {
-    if (rank === 1) return "bg-yellow-500";
-    if (rank === 2) return "bg-gray-400";
-    if (rank === 3) return "bg-amber-700";
-    return "bg-gray-800";
+    // All ranks appear to use the same yellow color in the screenshot
+    return "bg-yellow-500";
   };
 
-  // Function to get text color based on if it's the current user
-  const getTextColor = (userId: string) => {
-    return user?.id === userId ? "text-primary font-bold" : "text-white";
-  };
+  // We're using a consistent text color now based on the screenshot
 
   return (
     <Card className="w-full max-w-3xl bg-black border-yellow-500">
@@ -127,20 +138,20 @@ export default function Leaderboard() {
             {users.map((leaderboardUser) => (
               <div 
                 key={leaderboardUser.id}
-                className="flex items-center justify-between p-3 rounded-md"
+                className="flex items-center justify-between p-3 rounded-md bg-black"
               >
                 <div className="flex items-center gap-3">
                   <div 
-                    className={`flex items-center justify-center w-8 h-8 rounded-full ${getRankColor(leaderboardUser.rank)} text-white font-bold`}
+                    className={`flex items-center justify-center w-8 h-8 rounded-full ${getRankColor(leaderboardUser.rank)} text-black font-bold`}
                   >
                     {leaderboardUser.rank}
                   </div>
-                  <span className={`text-lg ${getTextColor(leaderboardUser.id)}`}>
+                  <span className="text-lg text-white">
                     {leaderboardUser.name}
                   </span>
                 </div>
-                <div className={`${getTextColor(leaderboardUser.id)} text-lg font-medium`}>
-                  {leaderboardUser.points} نقطة
+                <div className="text-lg font-medium text-white">
+                  <span>{leaderboardUser.points}</span> نقطة
                 </div>
               </div>
             ))}

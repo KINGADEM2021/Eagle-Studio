@@ -1,21 +1,43 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import Leaderboard from "@/components/leaderboard/leaderboard";
 import AddPoints from "@/components/leaderboard/add-points";
 import SetupSQL from "@/components/leaderboard/setup-sql";
+import AdminPanel from "@/components/leaderboard/admin-panel";
+
+type LeaderboardUser = {
+  id: string;
+  name: string;
+  points: number;
+  rank: number;
+};
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardUser[]>([]);
+  const refreshFnRef = useRef<(() => Promise<void>) | null>(null);
 
   const handleLogout = () => {
     logoutMutation.mutate();
   };
 
   const handlePointsAdded = () => {
-    setRefreshTrigger(prev => prev + 1);
+    if (refreshFnRef.current) {
+      refreshFnRef.current();
+    }
+  };
+  
+  // Function to refresh the leaderboard data
+  const handleLeaderboardRefresh = (refreshFn: () => Promise<void>) => {
+    refreshFnRef.current = refreshFn;
+  };
+  
+  // Function to receive users data from the Leaderboard component
+  const handleUsersLoaded = (users: LeaderboardUser[]) => {
+    setLeaderboardUsers(users);
   };
 
   if (!user) {
@@ -54,13 +76,23 @@ export default function HomePage() {
 
       {/* Main content */}
       <div className="w-full max-w-5xl flex flex-col md:flex-row gap-6">
-        {/* Leaderboard */}
-        <div className="w-full md:w-3/4">
-          <Leaderboard key={refreshTrigger} />
+        {/* Left column */}
+        <div className="w-full md:w-2/3 space-y-6">
+          <Leaderboard 
+            key={refreshTrigger} 
+            onUsersLoaded={handleUsersLoaded}
+            onRefresh={handleLeaderboardRefresh}
+          />
+          
+          {/* AdminPanel appears below the leaderboard */}
+          <AdminPanel 
+            users={leaderboardUsers} 
+            onPointsUpdated={handlePointsAdded} 
+          />
         </div>
 
         {/* Sidebar */}
-        <div className="w-full md:w-1/4 space-y-6">
+        <div className="w-full md:w-1/3 space-y-6">
           <AddPoints onPointsAdded={handlePointsAdded} />
           <SetupSQL />
         </div>
